@@ -35,6 +35,8 @@ from langchain_core.output_parsers import StrOutputParser
 # Путь к папке с .txt файлами
 DATA_DIR = "./docs"  # замените на свой путь
 
+OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
+
 # 1. Загрузка всех .txt файлов из папки
 loader = DirectoryLoader(DATA_DIR,
                         glob="*.txt",
@@ -52,7 +54,9 @@ text_splitter = CharacterTextSplitter(
 chunks = text_splitter.split_documents(documents)
 
 # 3. Создание эмбеддингов через Ollama (используем nomic-embed-text)
-embeddings = OllamaEmbeddings(model="all-minilm")
+embeddings = OllamaEmbeddings(model="all-minilm",
+            base_url=OLLAMA_URL
+            )
 
 # 4. Создание и сохранение локального векторного индекса (Chroma)
 vectorstore = Chroma.from_documents(
@@ -65,7 +69,9 @@ vectorstore = Chroma.from_documents(
 retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
 
 # 6. Инициализация LLM (например, llama3)
-llm = Ollama(model="llama3.1")
+llm = Ollama(model="llama3.1",
+            base_url=OLLAMA_URL
+            )
 
 # 7. Формирование цепочки RAG
 def format_docs(docs):
