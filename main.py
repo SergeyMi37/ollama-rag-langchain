@@ -33,7 +33,7 @@ from langchain_core.runnables import RunnablePassthrough
 from langchain_core.output_parsers import StrOutputParser
 
 # Путь к папке с .txt файлами
-DATA_DIR = "./docs"  # замените на свой путь
+DATA_DIR = "./data"  # замените на свой путь
 
 OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
 
