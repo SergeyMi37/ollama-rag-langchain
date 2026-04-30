@@ -1,5 +1,6 @@
 import os
 import shutil
+import json
 from langchain_community.document_loaders import DirectoryLoader, TextLoader
 from langchain_text_splitters import CharacterTextSplitter, RecursiveCharacterTextSplitter
 from langchain_ollama import OllamaEmbeddings
@@ -39,9 +40,42 @@ embeddings = OllamaEmbeddings(model="nomic-embed-text",
 # 4. Удаление старой базы данных если она была создана с другой размерностью
 
 persist_dir = "./chroma_db"
-# if os.path.exists(persist_dir):
-#     shutil.rmtree(persist_dir)
-#     print(f"Удалена старая база: {persist_dir}")
+metadata_file = os.path.join(persist_dir, "embedding_size.json")
+
+def get_embedding_dimension():
+    """Получить размерность эмбеддингов от текущей модели"""
+    test_text = ["test"]
+    embedding = embeddings.embed_documents(test_text)[0]
+    return len(embedding)
+
+def should_recreate_database():
+    """Проверить нужно ли пересоздавать базу данных"""
+    if not os.path.exists(persist_dir):
+        return True
+    
+    current_dim = get_embedding_dimension()
+    
+    if os.path.exists(metadata_file):
+        try:
+            with open(metadata_file, 'r', encoding='utf-8') as f:
+                saved_dim = json.load(f).get("embedding_dimension")
+            if saved_dim == current_dim:
+                print(f"Размерность совпадает ({current_dim}). Используем существующую базу.")
+                return False
+            else:
+                print(f"Размерность изменилась: была {saved_dim}, стала {current_dim}. Пересоздаём базу.")
+                return True
+        except (json.JSONDecodeError, IOError) as e:
+            print(f"Ошибка чтения метаданных: {e}. Пересоздаём базу.")
+            return True
+    else:
+        print("Файл метаданных не найден. Пересоздаём базу.")
+        return True
+
+if should_recreate_database():
+    if os.path.exists(persist_dir):
+        shutil.rmtree(persist_dir)
+        print(f"Удалена старая база: {persist_dir}")
 
 # 5. Создание и сохранение локального векторного индекса (Chroma)
 vectorstore = Chroma.from_documents(
@@ -49,6 +83,13 @@ vectorstore = Chroma.from_documents(
     embedding=embeddings,
     persist_directory="./chroma_db"  # сохраняем локально
 )
+
+# Сохраняем размерность эмбеддингов в файл метаданных
+os.makedirs(persist_dir, exist_ok=True)
+embedding_dim = get_embedding_dimension()
+with open(metadata_file, 'w', encoding='utf-8') as f:
+    json.dump({"embedding_dimension": embedding_dim}, f)
+print(f"Сохранена размерность эмбеддингов: {embedding_dim}")
 
 # 6. Настройка retriever (возвращает топ-3 релевантных чанка)
 retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
