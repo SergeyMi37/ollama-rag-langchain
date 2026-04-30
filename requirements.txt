@@ -1,4 +1,9 @@
+# pip install langchain-community 
+langchain-chroma 
+langchain-text-splitters
+
 langchain-community
 langchain-ollama
 unstructured
 chromadb
+

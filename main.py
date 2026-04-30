@@ -1,31 +1,8 @@
-# Вот полная программа на Python с использованием **LangChain**, **OllamaEmbeddings**, **Ollama LLM**, и **Chroma** в качестве локального векторного хранилища (VectorStore), которая реализует RAG-систему по вашему описанию:
-
-# ---
-
-# ### 🔧 Требования
-
-# Убедитесь, что у вас установлены следующие пакеты:
-
-# ```bash
-# pip install langchain langchain-community langchain-chroma ollama chromadb
-# ```
-
-# Также убедитесь, что у вас запущен **Ollama** и доступны модели, например:
-
-# ```bash
-# ollama pull llama3
-# ollama pull nomic-embed-text  # для эмбеддингов
-# ```
-
-# ---
-
-# ### 📜 Код программы
-
-# ```python
 import os
+import shutil
 from langchain_community.document_loaders import DirectoryLoader, TextLoader
-from langchain_text_splitters import CharacterTextSplitter
-from langchain_community.embeddings import OllamaEmbeddings
+from langchain_text_splitters import CharacterTextSplitter, RecursiveCharacterTextSplitter
+from langchain_ollama import OllamaEmbeddings
 from langchain_community.vectorstores import Chroma
 from langchain_community.llms import Ollama
 from langchain_core.prompts import PromptTemplate
@@ -36,6 +13,7 @@ from langchain_core.output_parsers import StrOutputParser
 DATA_DIR = "./data"  # замените на свой путь
 
 OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
+print('-----',OLLAMA_URL)
 
 # 1. Загрузка всех .txt файлов из папки
 loader = DirectoryLoader(DATA_DIR,
@@ -44,36 +22,43 @@ loader = DirectoryLoader(DATA_DIR,
                         loader_cls=TextLoader)
 documents = loader.load()
 
-# 2. Разделение документов на чанки (~1000 символов)
-text_splitter = CharacterTextSplitter(
-    chunk_size=1000,
-    chunk_overlap=100,
+# 2. Разделение документов на чанки (~256 символов)
+text_splitter = RecursiveCharacterTextSplitter(
+    chunk_size=1024,
+    chunk_overlap=50,
+    separators=["\n\n", "\n", "。", ".", " ", ""],
     length_function=len,
-    is_separator_regex=False,
 )
 chunks = text_splitter.split_documents(documents)
 
-# 3. Создание эмбеддингов через Ollama (используем nomic-embed-text)
-embeddings = OllamaEmbeddings(model="all-minilm",
+# 3. Создание эмбеддингов через Ollama (используем nomic-embed-text для 768-мерных векторов)
+embeddings = OllamaEmbeddings(model="nomic-embed-text",
             base_url=OLLAMA_URL
             )
 
-# 4. Создание и сохранение локального векторного индекса (Chroma)
+# 4. Удаление старой базы данных если она была создана с другой размерностью
+
+persist_dir = "./chroma_db"
+# if os.path.exists(persist_dir):
+#     shutil.rmtree(persist_dir)
+#     print(f"Удалена старая база: {persist_dir}")
+
+# 5. Создание и сохранение локального векторного индекса (Chroma)
 vectorstore = Chroma.from_documents(
     documents=chunks,
     embedding=embeddings,
     persist_directory="./chroma_db"  # сохраняем локально
 )
 
-# 5. Настройка retriever (возвращает топ-3 релевантных чанка)
+# 6. Настройка retriever (возвращает топ-3 релевантных чанка)
 retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
 
-# 6. Инициализация LLM (например, llama3)
+# 7. Инициализация LLM (например, llama3)
 llm = Ollama(model="llama3.1",
             base_url=OLLAMA_URL
             )
 
-# 7. Формирование цепочки RAG
+# 8. Формирование цепочки RAG
 def format_docs(docs):
     return "\n\n".join(doc.page_content for doc in docs)
 
@@ -99,41 +84,10 @@ rag_chain = (
     | StrOutputParser()
 )
 
-# 8. Пример использования
+# 9. Пример использования
 if __name__ == "__main__":
-    question = input("Введите ваш вопрос: ")
+    txt = input("Введите тему обращения: ")
+    #txt = 'Отсутствует водоснабжение'
+    question =f"Используя исходные документы, выбери номер темы, который больше всего подходит для текста: {txt}. В Ответ предоставь только номер темы."
     answer = rag_chain.invoke(question)
     print("\nОтвет:\n", answer)
-# ```
-
-# ---
-
-# ### 📁 Структура проекта
-
-# ```
-# your_project/
-# ├── main.py                 # код выше
-# └── data/
-#     ├── doc1.txt
-#     ├── doc2.txt
-#     └── ...
-# ```
-
-# ---
-
-# ### 💡 Примечания
-
-# - **Модель для эмбеддингов**: `nomic-embed-text` — популярная и бесплатная модель в Ollama для эмбеддингов. Убедитесь, что она скачана (`ollama pull nomic-embed-text`).
-# - **Модель для генерации**: `llama3` — можно заменить на `mistral`, `phi3` и т.д.
-# - **Хранение индекса**: Векторное хранилище сохраняется в папку `./chroma_db`, поэтому при повторном запуске не нужно заново индексировать (если файлы не менялись).
-# - **Размер чанка**: ~1000 символов (не токенов!). Если нужно по токенам — используйте `RecursiveCharacterTextSplitter` с `tiktoken`.
-
-# ---
-
-# ### 🔄 Опционально: пересоздание индекса при изменении файлов
-
-# Если вы хотите, чтобы программа пересоздавала индекс при изменении файлов — добавьте проверку хешей или просто удаляйте папку `chroma_db` перед запуском.
-
-# ---
-
-# Готово! Теперь у вас полноценная RAG-система на LangChain + Ollama с локальным хранением.
