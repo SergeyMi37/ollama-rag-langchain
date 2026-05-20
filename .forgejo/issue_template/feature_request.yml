@@ -1,0 +1,57 @@
+name: "Запрос новой функции"
+description: "Предложите идею для этого проекта"
+title: "[FEATURE]: "
+labels:
+  - "Kind/Feature"
+  - "Priority/Medium"
+  - "Status/Draft"
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Спасибо за вашу идею!
+        Расскажите, что вы хотите видеть в проекте.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Связана ли ваша идея с проблемой?
+      description: Чётко опишите проблему
+      placeholder: "Меня раздражает, когда ..."
+    validations:
+      required: false
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Опишите желаемое решение
+      description: Что должно произойти?
+      placeholder: "Я хочу, чтобы была возможность ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Альтернативы, которые вы рассматривали
+      description: Какие обходные пути или другие решения вы пробовали?
+    validations:
+      required: false
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Дополнительный контекст
+      description: Скриншоты, ссылки, примеры кода — всё, что поможет понять идею
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Подтверждение
+      options:
+        - label: Я проверил, что похожая функция ещё не предлагалась
+          required: true
+        - label: Я описал решение достаточно подробно
+          required: false

@@ -1,0 +1,11 @@
+# .forgejo/config.yml
+# Дополнительная конфигурация для автоматического проставления меток
+
+issues:
+  - name: "Шаблон задачи по умолчанию"
+    about: "Используйте этот шаблон, если не уверены, что выбрать"
+    title: "[TASK]: "
+    labels:
+      - "Kind/Question"
+      - "Priority/Medium"
+    assignees: []

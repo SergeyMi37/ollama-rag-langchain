@@ -1,0 +1,83 @@
+name: "Сообщение об ошибке"
+description: "Создать отчет об ошибке, чтобы помочь нам улучшить продукт"
+title: "[BUG]: "
+labels:
+  - "Kind/Bug"
+  - "Priority/Medium"
+  - "Status/Draft"
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Спасибо, что сообщаете о проблеме!
+        Пожалуйста, заполните информацию ниже максимально подробно.
+
+  - type: input
+    id: version
+    attributes:
+      label: Версия продукта
+      description: В какой версии вы обнаружили проблему?
+      placeholder: "например, v1.2.3"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Приоритет (от вашего имени)
+      description: Как вы оцениваете критичность для себя?
+      options:
+        - "Priority/Critical - Всё сломалось, работа остановлена"
+        - "Priority/High - Серьёзная проблема, но есть обходной путь"
+        - "Priority/Medium - Заметно, но можно работать"
+        - "Priority/Low - Косметическая проблема"
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: Что произошло?
+      description: Опишите проблему как можно детальнее
+      placeholder: "Я сделал X, ожидал Y, а получил Z..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Шаги воспроизведения
+      description: Как мы можем воспроизвести эту проблему?
+      placeholder: |
+        1. Зайти в ...
+        2. Нажать на ...
+        3. Увидеть ошибку ...
+      render: bash
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Ожидаемое поведение
+      description: Что должно было произойти?
+      placeholder: "Должно было ..."
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Логи или скриншоты
+      description: Вставьте логи, консоль или приложите скриншот
+      render: shell
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Подтверждение
+      options:
+        - label: Я проверил, что похожая проблема ещё не сообщалась
+          required: true
+        - label: Я предоставил минимальный пример для воспроизведения
+          required: false

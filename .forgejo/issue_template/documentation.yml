@@ -1,0 +1,50 @@
+name: "Вопрос по документации"
+description: "Сообщить о проблеме или предложить улучшение документации"
+title: "[DOCS]: "
+labels:
+  - "Kind/Documentation"
+  - "Priority/Medium"
+  - "Status/Draft"
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Помогите нам улучшить документацию
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: Тип запроса
+      options:
+        - "Опечатка или грамматическая ошибка"
+        - "Неточная или устаревшая информация"
+        - "Отсутствует важный раздел"
+        - "Предложение по улучшению"
+    validations:
+      required: true
+
+  - type: input
+    id: location
+    attributes:
+      label: Где находится проблема?
+      description: Укажите файл/раздел/URL документации
+      placeholder: "README.md, строка 42 или https://..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-is-wrong
+    attributes:
+      label: Что не так или что отсутствует?
+      description: Подробно опишите проблему
+    validations:
+      required: true
+
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Ваше предложение по исправлению
+      description: Как, по-вашему, должно быть написано?
+      render: markdown
+    validations:
+      required: false
