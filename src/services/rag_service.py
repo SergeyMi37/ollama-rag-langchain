@@ -8,7 +8,6 @@ from src.core.llm import get_llm
 from src.core.vectorstore import get_vectorstore
 from src.schemas.query import QueryRequest, QueryResponse, SourceDocument
 
-
 PROMPT_TEMPLATE = """
 Используй следующий контекст для ответа на вопрос.
 Если в контексте нет информации для ответа — скажи, что не знаешь.

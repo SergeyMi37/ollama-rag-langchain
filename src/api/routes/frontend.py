@@ -2,7 +2,8 @@
 
 import os
 from pathlib import Path
-from fastapi import APIRouter, Request, Form
+
+from fastapi import APIRouter, Form, Request
 from fastapi.responses import HTMLResponse
 from jinja2 import Environment, FileSystemLoader
 

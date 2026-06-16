@@ -1,14 +1,15 @@
+import json
 import os
 import shutil
-import json
+
 from langchain_community.document_loaders import DirectoryLoader, TextLoader
-from langchain_text_splitters import CharacterTextSplitter, RecursiveCharacterTextSplitter
-from langchain_ollama import OllamaEmbeddings
-from langchain_community.vectorstores import Chroma
 from langchain_community.llms import Ollama
+from langchain_community.vectorstores import Chroma
+from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import PromptTemplate
 from langchain_core.runnables import RunnablePassthrough
-from langchain_core.output_parsers import StrOutputParser
+from langchain_ollama import OllamaEmbeddings
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 # Путь к папке с .txt файлами
 DATA_DIR = "./data"  # замените на свой путь
@@ -52,12 +53,12 @@ def should_recreate_database():
     """Проверить нужно ли пересоздавать базу данных"""
     if not os.path.exists(persist_dir):
         return True
-    
+
     current_dim = get_embedding_dimension()
-    
+
     if os.path.exists(metadata_file):
         try:
-            with open(metadata_file, 'r', encoding='utf-8') as f:
+            with open(metadata_file, encoding='utf-8') as f:
                 saved_dim = json.load(f).get("embedding_dimension")
             if saved_dim == current_dim:
                 print(f"Размерность совпадает ({current_dim}). Используем существующую базу.")
@@ -65,7 +66,7 @@ def should_recreate_database():
             else:
                 print(f"Размерность изменилась: была {saved_dim}, стала {current_dim}. Пересоздаём базу.")
                 return True
-        except (json.JSONDecodeError, IOError) as e:
+        except (OSError, json.JSONDecodeError) as e:
             print(f"Ошибка чтения метаданных: {e}. Пересоздаём базу.")
             return True
     else:
