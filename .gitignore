@@ -141,3 +141,7 @@ dmypy.json
 
 # Vector Index
 chroma_db/
+
+# UV
+.uv/
+uv.lock
